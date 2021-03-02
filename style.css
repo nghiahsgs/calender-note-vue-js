@@ -72,6 +72,7 @@ caption {
 	border-radius: 50%;
   flex: 0 0 auto;
   align-self: flex-end;
+  box-sizing:content-box !important;
 }
 
 #calendar .event {

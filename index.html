@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     
-    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css" />
-    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
     <div id="app">
@@ -17,12 +17,12 @@
             <table id="calendar">
                 <caption style="display:flex;justify-content: space-between;">
                     <div>
-                        <button @click="load_previous_month()">Tháng trước</button>
+                        <button class="btn btn-primary" @click="load_previous_month()">Tháng trước</button>
                     </div>
                     <div>{{current_month}}/{{current_year}}</div>
                     
                     <div>
-                        <button @click="load_next_month()">Tháng sau</button>
+                        <button class="btn btn-primary" @click="load_next_month()">Tháng sau</button>
                     </div>
                 </caption>
                 
