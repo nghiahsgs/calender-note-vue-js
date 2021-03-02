@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="style.css" />
+    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+</head>
+<body>
+    <div id="app">
+        <template v-if="!is_loading">
+            <!-- <table id="calendar" v-if="previous_month.length && month.length && next_month.length"> -->
+            <table id="calendar">
+                <caption style="display:flex;justify-content: space-between;">
+                    <div>
+                        <button @click="load_previous_month()">Tháng trước</button>
+                    </div>
+                    <div>{{current_month}}/{{current_year}}</div>
+                    
+                    <div>
+                        <button @click="load_next_month()">Tháng sau</button>
+                    </div>
+                </caption>
+                
+                <tr class="weekdays">
+                    <th scope="col">Sunday</th>
+                    <th scope="col">Monday</th>
+                    <th scope="col">Tuesday</th>
+                    <th scope="col">Wednesday</th>
+                    <th scope="col">Thursday</th>
+                    <th scope="col">Friday</th>
+                    <th scope="col">Saturday</th>
+                </tr>
+
+                <tr class="days">
+
+                    <td class="day other-month" v-for="day in previous_month.slice(-nb_previous_month)">
+                        <div class="date">{{day['date']}}</div>
+                        
+                        <div class="event" v-for="event in day['events']">
+                            <div class="event-desc">
+                                {{event['desc']}}
+                            </div>
+                            <div class="event-time">
+                                {{event['time']}}
+                            </div>
+                        </div>
+                        
+                    </td>
+                    
+                    <td class="day" v-for="day in month">
+                        <template v-if="day['date'] == real_day && current_month==real_month">
+                            <div class="date" style="background: red;">{{day['date']}}</div>
+                        </template>
+                        <template v-else>
+                            <div class="date">{{day['date']}}</div>
+                        </template>
+                        
+                        <div class="event" v-for="event in day['events']">
+                            <div class="event-desc">
+                                {{event['desc']}}
+                            </div>
+                            <div class="event-time">
+                                {{event['time']}}
+                            </div>
+                        </div>
+                        
+                    </td>
+                    
+
+                    <td class="day other-month" v-for="day in next_month.slice(0,nb_next_month)">
+                        <div class="date">{{day['date']}}</div>
+                        
+                        <div class="event" v-for="event in day['events']">
+                            <div class="event-desc">
+                                {{event['desc']}}
+                            </div>
+                            <div class="event-time">
+                                {{event['time']}}
+                            </div>
+                        </div>
+                        
+                    </td>
+
+                </tr>
+            </table>
+        </template>
+        <template v-else>
+            <div class="loader"></div>
+        </template>
+
+    </div>
+</body>
+</html>
+
+<script src="./helper.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+<script>
+    new Vue({
+        el:"#app",
+        data:{
+            // updated at created
+            current_day:2, 
+            current_month:3,
+            current_year:2021,
+            real_day:2, 
+            real_month:3,
+            real_year:2021,
+
+            is_loading: true,
+
+            // length chac chan nho hon 7
+            previous_month:[
+               
+            ],
+            // :
+            month:[
+                
+            ],
+            // :
+            next_month:[
+            
+            ]
+            //--
+                
+        },
+        computed:{
+            nb_previous_month(){
+                if(this.month.length){
+                    return parseInt(this.month[0]['dayt'])
+                }
+                return 0
+                
+            },
+            nb_next_month(){
+                if(this.month.length){
+                    return 6 - parseInt(this.month[this.month.length-1]['dayt'])
+                }
+                return 0
+
+            }
+        },
+        methods:{
+            increasement(current_month,current_year){
+                current_month+=1
+                if(current_month>12){
+                    current_month = 1
+                    current_year+=1
+                }
+                return {current_month,current_year}
+            },
+            decreasement(current_month,current_year){
+                current_month-=1
+                if(current_month<1){
+                    current_month = 12
+                    current_year-=1
+                }
+                return {current_month,current_year}
+            },
+
+            async load_previous_month(){
+                let {current_month,current_year} = this.decreasement(this.current_month,this.current_year)
+                this.current_month = current_month
+                this.current_year = current_year
+                await this.load_data_3_month(this.current_month,this.current_year)
+            },
+            async load_next_month(){
+                let {current_month,current_year} = this.increasement(this.current_month,this.current_year)
+                this.current_month = current_month
+                this.current_year = current_year
+                await this.load_data_3_month(this.current_month,this.current_year)
+
+            },
+            async load_data_3_month(current_month_center,current_year_center){
+                this.is_loading = true
+                // load data previous month
+                var {current_month,current_year} = this.decreasement(current_month_center,current_year_center)
+                this.previous_month = await get_data_json(`http://localhost:3000/${current_month}/${current_year}`)
+                
+                // load data current month
+                this.month = await get_data_json(`http://localhost:3000/${current_month_center}/${current_year_center}`)
+                
+                // load data next month
+                var {current_month,current_year} = this.increasement(current_month_center,current_year_center)
+                this.next_month = await get_data_json(`http://localhost:3000/${current_month}/${current_year}`)
+
+                this.previous_month = this.previous_month['res']
+                this.month = this.month['res']
+                this.next_month = this.next_month['res']
+                this.is_loading = false
+            }
+        },
+        async created(){
+            let date = new Date()
+            this.real_day = date.getDate()
+            this.real_month = date.getMonth()+1
+            this.real_year = date.getFullYear()
+            this.current_day = this.real_day
+            this.current_month = this.real_month
+            this.current_year = this.real_year
+            
+
+            await this.load_data_3_month(this.current_month,this.current_year)
+        }
+    })
+</script>
